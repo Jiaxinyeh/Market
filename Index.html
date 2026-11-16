@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#f6f3ee; --card:#fff; --ink:#1f1d1a; --muted:#7a746b; --line:#e6e0d6;
+    --ye:#2f6f8f; --bao:#b4546b; --shared:#7b6aa8; --accent:#1f1d1a; --warn:#b26a00; --void:#9a9a9a;
+    --r:14px;
+  }
+  :root{color-scheme:light}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+  .wrap{max-width:520px;margin:0 auto;padding:16px 16px 120px}
+  .view{display:none}.view.on{display:block}
+  h1{font-size:22px;margin:4px 0 16px}
+  h2{font-size:16px;margin:24px 0 10px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .top button{background:none;border:0;font-size:16px;color:var(--muted);padding:8px 0;cursor:pointer}
+  .who{font-size:13px;color:var(--muted)}
+
+  /* login */
+  .pin-dots{display:flex;gap:14px;justify-content:center;margin:28px 0}
+  .pin-dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink)}
+  .pin-dots i.f{background:var(--ink)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:300px;margin:0 auto}
+  .pad button{height:64px;border-radius:50%;border:0;background:var(--card);font-size:24px;box-shadow:0 1px 0 var(--line);cursor:pointer}
+  .pad button.ghost{background:none;box-shadow:none;font-size:15px;color:var(--muted)}
+  .msg{text-align:center;color:var(--bao);min-height:22px;margin-top:14px;font-size:14px}
+
+  /* home */
+  .snap{display:flex;align-items:center;gap:14px;width:100%;border-radius:var(--r);padding:18px 20px;margin-bottom:14px;background:var(--ink);color:#fff;cursor:pointer}
+  .snap .ico{font-size:30px}
+  .snap b{display:block;font-size:19px}
+  .snap span{font-size:13px;opacity:.75}
+  .snap input,.upl input{display:none}
+  .entries{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+  .big{border:0;border-radius:var(--r);padding:18px 8px;color:#fff;font-size:17px;font-weight:600;cursor:pointer;line-height:1.25}
+  .big small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:3px}
+  .big.ye{background:var(--ye)}.big.bao{background:var(--bao)}.big.shared{background:var(--shared)}
+  .links{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .links button,.links label{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px 6px;font-size:15px;cursor:pointer;text-align:center;color:var(--ink)}
+  .count{display:inline-block;background:var(--warn);color:#fff;border-radius:10px;font-size:12px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+
+  /* form */
+  .card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px;border:1px solid var(--line)}
+  .lbl{font-size:13px;color:var(--muted);margin-bottom:8px;display:block}
+  .lbl.sp{margin-top:14px}
+  .amount-row{display:flex;gap:10px;align-items:center}
+  .amount-row input{flex:1;font-size:34px;font-weight:600;border:0;outline:0;width:100%;min-width:0;background:transparent;color:var(--ink);-webkit-text-fill-color:var(--ink);padding:4px 0;font-family:inherit}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0}
+  .seg button{border:0;background:var(--card);padding:9px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
+  .seg button.on{background:var(--accent);color:#fff}
+  .seg.full{display:flex;width:100%}.seg.full button{flex:1}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .chip{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 6px;font-size:14px;text-align:center;cursor:pointer;line-height:1.2;color:var(--ink)}
+  .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chip.more{color:var(--muted);border-style:dashed}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}.chips .chip{padding:8px 12px}
+  input.txt,textarea{width:100%;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;font-family:inherit;color:var(--ink)}
+  textarea{min-height:56px;resize:vertical}
+  .row{display:flex;gap:10px;align-items:center;margin-top:10px}
+  .row > *{flex:1}
+  .photo-btns{display:flex;gap:10px}
+  .photo-btns label{flex:1;text-align:center;border:1px dashed #bdb5a8;border-radius:10px;padding:12px 6px;cursor:pointer;font-size:15px}
+  .photo-btns input{display:none}
+  .thumbs{display:flex;flex-wrap:wrap;gap:8px}
+  .thumbs:not(:empty){margin-top:10px}
+  .thumb{position:relative;width:72px;height:72px;border-radius:8px;background:#eee center/cover;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);overflow:hidden;text-align:center}
+  .thumb a{color:var(--ye);font-size:12px}
+  .thumb .x{position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:22px;padding:0;cursor:pointer}
+  .thumb.busy::after{content:"…";position:absolute;inset:0;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .hint{font-size:13px;color:var(--muted);margin-top:8px}
+  .split{font-size:14px;margin-top:8px;color:var(--bao)}
+  .sgrid{display:grid;grid-template-columns:40px 1fr 1fr;gap:8px;align-items:center}
+  .sgrid b{font-size:15px}
+  .unit{display:flex;align-items:center;gap:6px}
+  .unit input{text-align:right;min-width:0}
+  .unit span{flex:0 0 16px;color:var(--muted);font-size:15px}
+  .chips.tight{gap:6px}
+  .chips.tight .chip{padding:7px 10px;font-size:14px;border-radius:9px}
+  .mkt-more{margin-top:10px}
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+  .cal-head b{color:var(--ink);font-weight:600;margin-left:4px}
+  .cal{user-select:none}
+  .cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .cal-nav button{border:0;background:none;font-size:20px;padding:4px 12px;cursor:pointer;color:var(--ink)}
+  .cal-nav span{font-weight:600;font-size:15px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+  .cal-grid .dow{font-size:11px;color:var(--muted);padding:2px 0}
+  .cal-grid button{border:0;background:none;height:36px;border-radius:8px;font-size:15px;cursor:pointer;color:var(--ink)}
+  .cal-grid button.we{color:var(--accent);font-weight:600}
+  .cal-grid button.today{box-shadow:inset 0 0 0 1px var(--line)}
+  .cal-grid button.in{background:color-mix(in srgb,var(--accent) 18%,#fff)}
+  .cal-grid button.sel{background:var(--accent);color:#fff}
+  .mkt-more .chips{margin-top:10px}
+  .check{display:flex;align-items:center;gap:8px;font-size:15px;margin-top:14px}
+  .check input{width:20px;height:20px;margin:0}
+  .save-bar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:18px 16px calc(16px + env(safe-area-inset-bottom))}
+  .save-bar .inner{max-width:520px;margin:0 auto;display:flex;gap:10px}
+  .btn{border:0;border-radius:12px;padding:16px;font-size:17px;font-weight:600;cursor:pointer}
+  .btn.primary{flex:1;background:var(--accent);color:#fff}
+  .btn.primary:disabled{opacity:.5}
+  .btn.ghost2{flex:0 0 34%;background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn:disabled{opacity:.5}
+  .owner-ye{--accent:var(--ye)}.owner-bao{--accent:var(--bao)}.owner-shared{--accent:var(--shared)}
+  .status{display:inline-block;font-size:12px;border-radius:6px;padding:1px 6px;margin-left:6px;font-weight:400}
+  .status.Draft{background:#fdecc8;color:var(--warn)}.status.Void{background:#eee;color:var(--void)}.status.Done{display:none}
+
+  /* lists */
+  .search{display:flex;gap:8px;margin-bottom:10px}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer}
+  .item .pic{width:52px;height:52px;border-radius:8px;background:#eee center/cover;flex:0 0 52px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px}
+  .item .l{min-width:0;flex:1}.item .t{font-weight:600}
+  .item .d{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .r{text-align:right;white-space:nowrap}.item .amt{font-weight:600}
+  .item .amt.none{color:var(--warn);font-weight:400;font-size:14px}
+  .tag{font-size:11px;border-radius:5px;padding:1px 5px;color:#fff;margin-right:4px;font-weight:600}
+  .tag.YE{background:var(--ye)}.tag.BAO{background:var(--bao)}.tag.Shared{background:var(--shared)}.tag.none{background:#c9c2b6}
+  .item.Void{opacity:.5}.item.Void .amt{text-decoration:line-through}
+  .item.busy{opacity:.6;pointer-events:none}
+  .empty{text-align:center;color:var(--muted);padding:24px 0;font-size:14px}
+  .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10;max-width:90%;text-align:center}
+  .toast.on{opacity:1}
+  .loading{position:fixed;inset:0;background:rgba(246,243,238,.7);display:none;align-items:center;justify-content:center;font-size:15px;color:var(--muted);z-index:9}
+  .loading.on{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <section id="v-login" class="view">
+    <h1 style="text-align:center;margin-top:40px">Market Finance</h1>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="pad" id="pad"></div>
+    <div class="msg" id="pinMsg"></div>
+  </section>
+
+  <!-- HOME -->
+  <section id="v-home" class="view">
+    <div class="top"><h1 style="margin:0">Market Finance</h1><span class="who" id="whoAmI"></span></div>
+    <label class="snap"><span class="ico">📷</span><div><b>Snap receipt</b><span>Take a photo now, fill in later</span></div>
+      <input type="file" accept="image/*" capture="environment" id="snapInput"></label>
+    <div class="entries">
+      <button class="big ye" data-entry="YE">YE<small>Expense</small></button>
+      <button class="big bao" data-entry="BAO">BAO<small>Expense</small></button>
+      <button class="big shared" data-entry="Shared">Shared<small>50 / 50</small></button>
+    </div>
+    <div class="links">
+      <button id="goIncome">Income</button>
+      <label class="upl">Upload files<input type="file" accept="image/*,application/pdf" multiple id="snapFiles"></label>
+      <button id="goRecords">Records</button>
+    </div>
+    <h2>To complete<span class="count" id="todoCount" style="display:none"></span></h2>
+    <div id="todo"></div>
+    <p class="hint" style="text-align:center;margin-top:28px"><a href="#" id="logout" style="color:var(--muted)">Log out</a></p>
+  </section>
+
+  <!-- FORM -->
+  <section id="v-form" class="view">
+    <div class="top"><button id="formBack">‹ Back</button><span class="who" id="formTitle"></span></div>
+
+    <div class="card" id="ownerCard">
+      <span class="lbl">Owner</span>
+      <div class="seg full" id="ownerSeg"></div>
+    </div>
+
+    <div class="card">
+      <span class="lbl">Receipt</span>
+      <div class="photo-btns">
+        <label>📷 Photo<input type="file" accept="image/*" capture="environment" id="filePhoto"></label>
+        <label>📎 File<input type="file" accept="image/*,application/pdf" multiple id="fileAny"></label>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+
+    <div class="card" id="catCard">
+      <span class="lbl">Category</span>
+      <div class="chips tight" id="catGrid"></div>
+      <label class="check" id="capitalRow"><input type="checkbox" id="capital"><span>Capital item (depreciated over years)</span></label>
+    </div>
+
+    <div class="card" id="carCard" style="display:none">
+      <span class="lbl">Car</span>
+      <div class="seg full" id="carSeg"><button data-v="fuel">Fuel / costs</button><button data-v="km">Kilometres</button></div>
+      <div id="kmRow" style="display:none">
+        <div class="row"><div class="unit"><input class="txt" id="km" inputmode="decimal" placeholder="Business km"><span style="flex:0 0 24px">km</span></div></div>
+        <div class="hint" id="kmText"></div>
+      </div>
+    </div>
+
+    <div class="card" id="marketCard" style="display:none">
+      <div class="cal-head"><span class="lbl" style="margin:0">Market date <b id="mdText"></b></span>
+        <label class="check" style="margin:0;font-size:14px"><input type="checkbox" id="multiDay">Multiple days</label></div>
+      <div class="cal" id="cal"></div>
+      <span class="lbl sp">Market <span class="who">(optional)</span></span>
+      <div class="chips tight" id="marketChips"></div>
+      <div class="mkt-more" id="mktMore" style="display:none">
+        <input class="txt" id="mktSearch" placeholder="Search or type a new market">
+        <div class="chips tight" id="mktOther"></div>
+      </div>
+    </div>
+
+    <div class="card" id="amountCard">
+      <span class="lbl">Amount</span>
+      <div class="amount-row">
+        <input id="amount" inputmode="decimal" autocomplete="off" placeholder="0.00">
+        <div class="seg" id="curSeg"><button data-v="AUD">AUD</button><button data-v="CNY">CNY</button></div>
+      </div>
+      <div id="audRow" class="row" style="display:none">
+        <input class="txt" id="aud" inputmode="decimal" placeholder="AUD actually charged (can add later)">
+      </div>
+      <label class="check" id="gstRow"><input type="checkbox" id="gst"><span>Includes GST <span class="who" id="gstText"></span></span></label>
+    </div>
+
+    <div class="card" id="splitCard">
+      <span class="lbl">Split — fill any one box</span>
+      <div class="sgrid">
+        <b>YE</b>
+        <div class="unit"><input class="txt" inputmode="decimal" id="s_ye_pct"><span>%</span></div>
+        <div class="unit"><input class="txt" inputmode="decimal" id="s_ye_amt"><span class="cur">$</span></div>
+        <b>BAO</b>
+        <div class="unit"><input class="txt" inputmode="decimal" id="s_bao_pct"><span>%</span></div>
+        <div class="unit"><input class="txt" inputmode="decimal" id="s_bao_amt"><span class="cur">$</span></div>
+      </div>
+      <div class="split" id="splitText"></div>
+    </div>
+
+    <div class="card" id="incomeCard">
+      <span class="lbl">Source</span>
+      <div class="chips" id="sourceChips"></div>
+    </div>
+
+    <div class="card" id="expenseMore">
+      <span class="lbl">Paid by</span>
+      <div class="seg full" id="payerSeg"><button data-v="YE">YE</button><button data-v="BAO">BAO</button></div>
+      <span class="lbl sp">Payment method</span>
+      <div class="chips" id="methodChips"></div>
+    </div>
+
+    <div class="card">
+      <span class="lbl">Date</span>
+      <input class="txt" type="date" id="date">
+      <span class="lbl sp">Details</span>
+      <textarea id="details" placeholder="What & where"></textarea>
+    </div>
+    <p class="hint" id="draftHint"><b>Save</b> keeps it in “To complete”. <b>Submit</b> when everything is filled in — only submitted records count in reports.</p>
+    <p class="hint" style="text-align:center;margin-top:18px"><a href="#" id="voidLink" style="color:var(--bao)"></a></p>
+  </section>
+
+  <!-- LIST -->
+  <section id="v-list" class="view">
+    <div class="top"><button id="listBack">‹ Back</button><span class="who">Records</span></div>
+    <div class="search">
+      <input class="txt" id="q" placeholder="Search details, amount, market">
+      <input class="txt" type="month" id="month" style="flex:0 0 150px">
+    </div>
+    <div class="seg full" id="statusSeg" style="margin-bottom:12px">
+      <button data-v="">All</button><button data-v="Draft">To complete</button><button data-v="Void">Voided</button>
+    </div>
+    <div id="items"></div>
+  </section>
+</div>
+
+<div class="save-bar" id="saveBar" style="display:none"><div class="inner">
+  <button class="btn ghost2" id="saveBtn">Save</button>
+  <button class="btn primary" id="submitBtn">Submit ✓</button>
+</div></div>
+<div class="toast" id="toast"></div>
+<div class="loading" id="loading">…</div>
+
+<script>window.__BOOT = <?!= boot ?>;</script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const store = {
+    get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+    set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+    del(k){ try { localStorage.removeItem(k); } catch(e){} }
+  };
+  // a personal link (?u=..&k=..) hands the page a ready token, so no PIN is needed
+  const BOOT = window.__BOOT || null;
+  if (BOOT && BOOT.token) store.set('mf_token', BOOT.token);
+  if (BOOT && BOOT.error) setTimeout(() => { const m = document.querySelector('#pinMsg'); if (m) m.textContent = BOOT.error; }, 0);
+  let token = (BOOT && BOOT.token) || store.get('mf_token');
+  let boot = null;
+  let f = null;              // form state
+  let pending = 0;           // uploads in flight in the form
+  let snapping = [];         // snaps being uploaded from home
+  let showFolded = false;
+  let showMoreMkt = false;
+
+  // ---------- server ----------
+  function run(fn, ...args){
+    return new Promise((res, rej) => {
+      google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args);
+    });
+  }
+  function call(action, data){
+    return run('api', token, action, data || {}).catch(e => {
+      const m = String(e && e.message || e);
+      if (m.indexOf('AUTH') >= 0){ logout(); throw new Error('Please log in again'); }
+      throw new Error(m.replace(/^Error:\s*/,''));
+    });
+  }
+
+  // ---------- helpers ----------
+  function show(v){
+    $$('.view').forEach(x => x.classList.remove('on'));
+    $('#v-' + v).classList.add('on');
+    $('#saveBar').style.display = v === 'form' ? 'block' : 'none';
+    if (v !== 'form') document.body.className = '';
+    window.scrollTo(0,0);
+  }
+  let toastT;
+  function toast(msg, ms){
+    const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms || 2200);
+  }
+  function busy(on){ $('#loading').classList.toggle('on', !!on); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function money(n){ return Number(n).toFixed(2); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function today(){ return ymd(new Date()); }
+  function newId(){
+    const d = new Date();
+    const r = Array.from({length:4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+    return 'T' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + r;
+  }
+  function segSet(el, v){ $$(el + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
+  function when(r){
+    const t = String(r.created_at || '');
+    const time = t.length >= 16 ? t.slice(11,16) : '';
+    return r.date + (time && t.slice(0,10) === r.date ? ' ' + time : '');
+  }
+  function itemHtml(r, opts){
+    const sym = r.currency === 'CNY' ? '¥' : 'A$';
+    const owner = r.owner ? '<span class="tag '+r.owner+'">'+r.owner+'</span>' : '<span class="tag none">Who?</span>';
+    const cat = r.category || (r.type === 'Income' ? 'Income' : 'No category');
+    const amt = r.amount === '' ? '<div class="amt none">No amount</div>' : '<div class="amt">'+(r.type==='Income'?'+':'')+sym+money(r.amount)+'</div>';
+    const pic = opts && opts.pic ? '<div class="pic" style="'+(r.thumb?'background-image:url('+r.thumb+')':'')+'">'+(r.thumb?'':(r.receipts?'📎':'✎'))+'</div>' : '';
+    return '<div class="item '+r.status+(r.busy?' busy':'')+'" data-id="'+esc(r.id)+'">' + pic + '<div class="l">' +
+      '<div class="t">'+owner+esc(cat)+(opts && opts.pic ? '' : '<span class="status '+r.status+'">'+(r.status==='Draft'?'To complete':r.status==='Void'?'Voided':'')+'</span>')+'</div>' +
+      '<div class="d">'+esc(r.busy ? 'Uploading…' : when(r))+(r.market||r.market_date?' · '+esc(r.market||'Market')+(r.market_date?' '+esc(r.market_date.slice(5))+(r.market_date_end?'→'+esc(r.market_date_end.slice(5)):''):''):'')+(r.details?' · '+esc(r.details):'')+(!opts && r.receipts?' · 📎'+r.receipts:'')+'</div></div>' +
+      '<div class="r">'+amt+(r.currency==='CNY' && r.amount !== '' ? '<div class="d">'+(r.aud!==''?'A$'+money(r.aud):'AUD missing')+'</div>' : '')+'</div></div>';
+  }
+
+  // ---------- login ----------
+  let pin = '';
+  function renderPin(){ $('#pinDots').innerHTML = Array.from({length: Math.max(4, pin.length)}, (_,i) => '<i class="' + (i < pin.length ? 'f' : '') + '"></i>').join(''); }
+  function buildPad(){
+    const keys = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
+    $('#pad').innerHTML = keys.map(k => '<button data-k="'+k+'" class="'+(k==='del'||k==='ok'?'ghost':'')+'">'+(k==='del'?'Delete':k==='ok'?'OK':k)+'</button>').join('');
+    $('#pad').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      const k = b.dataset.k;
+      if (k === 'del') pin = pin.slice(0,-1);
+      else if (k === 'ok') return doLogin();
+      else if (pin.length < 8) pin += k;
+      $('#pinMsg').textContent = '';
+      renderPin();
+    });
+  }
+  function doLogin(){
+    if (pin.length < 4) return;
+    busy(true);
+    run('login', pin).then(r => {
+      token = r.token; store.set('mf_token', token); pin = ''; renderPin(); start();
+    }).catch(e => {
+      const m = String(e && e.message || e);
+      $('#pinMsg').textContent = m.indexOf('LOCKED') >= 0 ? 'Too many tries — wait 15 minutes' : 'Wrong PIN';
+      pin = ''; renderPin();
+    }).finally(() => busy(false));
+  }
+  function logout(){ token = null; store.del('mf_token'); boot = null; renderPin(); show('login'); }
+
+  // ---------- home ----------
+  function start(){
+    if (!token){ show('login'); return; }
+    busy(true);
+    call('bootstrap').then(b => { boot = b; renderHome(); show('home'); })
+      .catch(e => { if (token) toast(e.message, 4000); })
+      .finally(() => busy(false));
+  }
+  function refreshBoot(){ return call('bootstrap').then(b => { boot = b; renderHome(); }).catch(()=>{}); }
+  function renderHome(){
+    $('#whoAmI').textContent = '👤 ' + boot.user;
+    const list = snapping.concat(boot.drafts || []);
+    const n = boot.inbox + snapping.length;
+    $('#todoCount').style.display = n ? 'inline-block' : 'none'; $('#todoCount').textContent = n;
+    $('#todo').innerHTML = list.length ? list.map(r => itemHtml(r, {pic:true})).join('') +
+      (boot.inbox > (boot.drafts || []).length ? '<div class="empty">Showing the latest ' + boot.drafts.length + ' — see Records for all</div>' : '')
+      : '<div class="empty">All done ✓</div>';
+  }
+
+  // snap from home: each photo becomes its own draft, dated when the photo was taken
+  function snapFiles(files){
+    Array.from(files || []).forEach(file => {
+      const taken = file.lastModified ? new Date(file.lastModified) : new Date();
+      const now = new Date();
+      const rec = { id: newId(), busy: true, status: 'Draft', type: 'Expense', owner: '', amount: '', currency: 'AUD',
+        date: ymd(taken > now ? now : taken), created_at: '', receipts: 1, thumb: '' };
+      snapping.unshift(rec); renderHome();
+      prepare(file).then(p => {
+        rec.thumb = p.small; renderHome();
+        return call('upload', { txnId: rec.id, mime: p.mime, b64: p.b64 });
+      }).then(up => call('save', { id: rec.id, type: 'Expense', owner: '', date: rec.date, amount: '', currency: 'AUD',
+          receipts: [up.id], thumb: rec.thumb, method: store.get('mf_method_' + boot.user) || '' }))
+        .then(() => toast('Saved — fill it in later'))
+        .catch(e => toast('Could not save photo: ' + e.message, 4000))
+        .finally(() => { snapping.splice(snapping.indexOf(rec), 1); refreshBoot(); });
+    });
+  }
+
+  // ---------- form ----------
+  function blankForm(type, owner){
+    return {
+      id: newId(), isNew: true, from: 'home', type, owner,
+      amount: '', currency: 'AUD', aud: '', category_id: '', market: '', date: today(), details: '',
+      payer: owner === 'YE' || owner === 'BAO' ? owner : boot.user,
+      method: store.get('mf_method_' + boot.user) || (boot.methods[0] || ''), capital: null,
+      market_date: '', market_date_end: '', car_mode: 'fuel', km: '', split: { k: 'ye_pct', v: 50 }, gst: false, autoFee: null, receipts: [], thumb: '',
+      income_source: 'Square', status: ''
+    };
+  }
+  function openForm(state){
+    f = state; pending = 0;
+    const cat = currentCat();
+    showFolded = !!(cat && cat.folded);
+    $('#amount').value = f.amount === '' ? '' : money(f.amount);
+    $('#aud').value = (f.currency === 'CNY' && f.aud !== '') ? money(f.aud) : '';
+    $('#date').value = f.date; $('#details').value = f.details || '';
+    $('#gst').checked = !!f.gst;
+    $('#km').value = f.km === '' || f.km == null ? '' : f.km;
+    calMonth = null; $('#multiDay').checked = !!f.market_date_end;
+    showMoreMkt = false; $('#mktSearch').value = '';
+    fillSplit(null);
+    renderForm(); updateSaveBtn();
+    show('form');
+  }
+  function currentCat(){ return boot.categories.find(c => c.id === f.category_id) || null; }
+  function renderForm(){
+    const exp = f.type === 'Expense';
+    document.body.className = f.owner ? 'owner-' + f.owner.toLowerCase() : '';
+    $('#formTitle').innerHTML = (f.isNew ? 'New ' : 'Edit ') + (exp ? 'expense' : 'income') + (f.status ? '<span class="status '+f.status+'">'+(f.status==='Draft'?'To complete':f.status==='Void'?'Voided':'')+'</span>' : '');
+    const owners = exp ? ['YE','BAO','Shared'] : ['YE','BAO'];
+    $('#ownerSeg').innerHTML = owners.map(o => '<button data-v="'+o+'">'+o+'</button>').join('');
+    segSet('#ownerSeg', f.owner);
+    segSet('#curSeg', f.currency);
+    $('#audRow').style.display = f.currency === 'CNY' ? 'flex' : 'none';
+    // split
+    $('#splitCard').style.display = exp && f.owner === 'Shared' ? 'block' : 'none';
+    $$('#splitCard .cur').forEach(x => x.textContent = f.currency === 'CNY' ? '¥' : '$');
+    $('#gstRow').style.display = exp ? 'flex' : 'none';
+    renderGst();
+    // categories: frequent ones first, rare ones behind "More"
+    $('#catCard').style.display = exp ? 'block' : 'none';
+    const main = boot.categories.filter(c => !c.folded), rare = boot.categories.filter(c => c.folded);
+    const chip = c => '<button class="chip'+(c.id===f.category_id?' on':'')+'" data-id="'+esc(c.id)+'">'+esc(c.name)+'</button>';
+    $('#catGrid').innerHTML = main.map(chip).join('') + (showFolded ? rare.map(chip).join('') : '') +
+      (rare.length ? '<button class="chip more" data-more="1">'+(showFolded ? 'Less ▴' : 'More ▾')+'</button>' : '');
+    // market
+    const cat = currentCat();
+    $('#marketCard').style.display = exp && cat && cat.market ? 'block' : 'none';
+    renderMarkets();
+    renderCal();
+    const isCar = exp && cat && cat.id === 'car', kmMode = isCar && f.car_mode === 'km';
+    $('#carCard').style.display = isCar ? 'block' : 'none';
+    segSet('#carSeg', f.car_mode);
+    $('#kmRow').style.display = kmMode ? 'block' : 'none';
+    $('#amountCard').style.display = kmMode ? 'none' : 'block';
+    if (kmMode && f.currency !== 'AUD'){ f.currency = 'AUD'; segSet('#curSeg', 'AUD'); }
+    renderKm();
+    // income
+    $('#incomeCard').style.display = exp ? 'none' : 'block';
+    $('#sourceChips').innerHTML = boot.incomeSources.map(s => '<button class="chip'+(s===f.income_source?' on':'')+'" data-s="'+s+'">'+s+'</button>').join('');
+    // details
+    $('#expenseMore').style.display = exp ? 'block' : 'none';
+    $('#gstRow').style.display = exp ? 'flex' : 'none';
+    segSet('#payerSeg', f.payer);
+    $('#methodChips').innerHTML = boot.methods.map(m => '<button class="chip'+(m===f.method?' on':'')+'" data-m="'+esc(m)+'">'+esc(m)+'</button>').join('');
+    $('#capitalRow').style.display = cat && cat.capital ? 'flex' : 'none';
+    $('#capital').checked = f.capital === null ? true : !!f.capital;
+    renderThumbs();
+    $('#voidLink').style.display = f.isNew ? 'none' : 'inline';
+    $('#voidLink').textContent = f.status === 'Void' ? 'Restore this record' : 'Void this record';
+    $('#draftHint').style.display = f.status === 'Done' || f.status === 'Void' ? 'none' : 'block';
+    updateSaveBtn();
+  }
+  // ---- split: four boxes, the one you type in drives the other three ----
+  function splitPct(){
+    const total = Number($('#amount').value) || 0, k = f.split.k, v = Number(f.split.v);
+    if (f.split.v === '' || isNaN(v)) return 50;
+    if (k === 'ye_pct') return v;
+    if (k === 'bao_pct') return 100 - v;
+    if (!total) return null;
+    return k === 'ye_amt' ? v / total * 100 : (total - v) / total * 100;
+  }
+  function fillSplit(skip){
+    if (!f || !(f.type === 'Expense' && f.owner === 'Shared')) return;
+    const total = Number($('#amount').value) || 0, pct = splitPct();
+    const bad = pct === null || pct < -0.001 || pct > 100.001;
+    const r2 = n => String(Math.round(n * 100) / 100);
+    const vals = bad ? {} : { ye_pct: r2(pct), bao_pct: r2(100 - pct),
+      ye_amt: total ? money(total * pct / 100) : '', bao_amt: total ? money(total - total * pct / 100) : '' };
+    ['ye_pct','ye_amt','bao_pct','bao_amt'].forEach(k => { if (k !== skip && !bad) $('#s_' + k).value = vals[k]; });
+    $('#splitText').textContent = bad ? (pct === null ? 'Enter the total amount first' : 'Share must be within the total') : '';
+  }
+  function renderGst(){
+    const a = Number($('#amount').value) || 0, sym = f.currency === 'CNY' ? '¥' : 'A$';
+    $('#gstText').textContent = $('#gst').checked && a ? '(' + sym + money(a / 11) + ')' : '';
+  }
+  function renderMarkets(){
+    const top = boot.markets.filter(m => m.top);
+    const sel = f.market && !top.some(m => m.name === f.market) ? [{ name: f.market }] : [];
+    const chip = m => '<button class="chip'+(m.name===f.market?' on':'')+'" data-m="'+esc(m.name)+'">'+esc(m.name)+'</button>';
+    $('#marketChips').innerHTML = top.concat(sel).map(chip).join('') + '<button class="chip more" data-m="__more">'+(showMoreMkt ? 'Less ▴' : 'More ▾')+'</button>';
+    $('#mktMore').style.display = showMoreMkt ? 'block' : 'none';
+    if (!showMoreMkt) return;
+    const q = $('#mktSearch').value.trim().toLowerCase();
+    const rest = boot.markets.filter(m => !m.top && (!q || m.name.toLowerCase().indexOf(q) >= 0));
+    const exact = boot.markets.some(m => m.name.toLowerCase() === q);
+    $('#mktOther').innerHTML = rest.slice(0, 40).map(chip).join('') +
+      (q && !exact ? '<button class="chip more" data-add="1">＋ Add “'+esc($('#mktSearch').value.trim())+'”</button>' : '') +
+      (!rest.length && !q ? '<span class="who">No other markets</span>' : '');
+  }
+  // ---- inline calendar for the market date; "Multiple days" picks a start and an end ----
+  let calMonth = null;
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function parseD(v){ const p = v.split('-').map(Number); return new Date(p[0], p[1]-1, p[2], 12); }
+  function nice(v){ const d = parseD(v); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; }
+  function renderCal(){
+    if (!f) return;
+    const start = f.market_date, end = f.market_date_end;
+    if (!calMonth){ const b = start ? parseD(start) : new Date(); calMonth = new Date(b.getFullYear(), b.getMonth(), 1, 12); }
+    const y = calMonth.getFullYear(), m = calMonth.getMonth();
+    const lead = (new Date(y, m, 1).getDay() + 6) % 7;            // weeks start on Monday
+    const days = new Date(y, m + 1, 0).getDate(), t = today();
+    let h = '<div class="cal-nav"><button data-nav="-1">‹</button><span>' + MON[m] + ' ' + y + '</span><button data-nav="1">›</button></div><div class="cal-grid">';
+    h += ['Mo','Tu','We','Th','Fr','Sa','Su'].map(x => '<span class="dow">' + x + '</span>').join('');
+    for (let i = 0; i < lead; i++) h += '<span></span>';
+    for (let d = 1; d <= days; d++){
+      const v = y + '-' + pad(m + 1) + '-' + pad(d), w = new Date(y, m, d).getDay();
+      const cls = [(w === 0 || w === 6) ? 'we' : '', v === t ? 'today' : '',
+        (v === start || v === end) ? 'sel' : (start && end && v > start && v < end ? 'in' : '')].join(' ');
+      h += '<button class="' + cls + '" data-d="' + v + '">' + d + '</button>';
+    }
+    $('#cal').innerHTML = h + '</div>';
+    const n = start && end ? Math.round((parseD(end) - parseD(start)) / 864e5) + 1 : 0;
+    $('#mdText').textContent = !start ? '' : end ? nice(start) + ' – ' + nice(end) + ' (' + n + ' days)'
+      : nice(start) + ($('#multiDay').checked ? ' → pick end' : '');
+  }
+  function pickDay(v){
+    if (!$('#multiDay').checked){ f.market_date = f.market_date === v ? '' : v; f.market_date_end = ''; }
+    else if (!f.market_date || f.market_date_end){ f.market_date = v; f.market_date_end = ''; }   // start a new range
+    else if (v === f.market_date){ f.market_date = ''; }
+    else if (v < f.market_date){ f.market_date_end = f.market_date; f.market_date = v; }
+    else f.market_date_end = v;
+    renderCal();
+  }
+  function fyOf(v){ const y = Number(v.slice(0,4)), m = Number(v.slice(5,7)), s0 = m >= 7 ? y : y - 1; return 'FY' + s0 + '-' + pad((s0 + 1) % 100); }
+  // km mode: amount = km × the ATO rate for the financial year of the date
+  function renderKm(){
+    if (!f || f.car_mode !== 'km' || f.category_id !== 'car') return;
+    const fy = fyOf($('#date').value || today()), rate = (boot.kmRates || {})[fy];
+    const km = Number($('#km').value);
+    if (!rate){ $('#kmText').textContent = 'No rate for ' + fy + ' — add it to the KmRates sheet'; $('#amount').value = ''; return; }
+    if (!(km > 0)){ $('#kmText').textContent = '× $' + rate.toFixed(2) + '/km (' + fy + ')'; $('#amount').value = ''; fillSplit(null); return; }
+    const amt = Math.round(km * rate * 100) / 100;
+    $('#amount').value = money(amt);
+    $('#kmText').textContent = km + ' km × $' + rate.toFixed(2) + ' (' + fy + ') = A$' + money(amt);
+    fillSplit(null);
+  }
+  function applyFee(){
+    const cat = currentCat();
+    if (!cat || cat.id !== 'market_fee' || !f.market || f.currency !== 'AUD') return;
+    const m = boot.markets.find(x => x.name === f.market);
+    if (!m || m.fee === '' || m.fee === null || m.fee === undefined) return;
+    const cur = $('#amount').value.trim();
+    if (cur === '' || (f.autoFee !== null && Number(cur) === Number(f.autoFee))){
+      $('#amount').value = money(m.fee); f.autoFee = m.fee; fillSplit(null); renderGst();
+    }
+  }
+  function renderThumbs(){
+    $('#thumbs').innerHTML = f.receipts.map((r,i) =>
+      '<div class="thumb'+(r.busy?' busy':'')+'" style="'+(r.thumb?'background-image:url('+r.thumb+')':'')+'">' +
+      (r.thumb ? '' : (r.url ? '<a href="'+esc(r.url)+'" target="_blank">View</a>' : (r.pdf ? 'PDF' : ''))) +
+      '<button class="x" data-i="'+i+'">✕</button></div>').join('');
+  }
+
+  // shrink photos on the phone before upload; also make a tiny thumbnail for lists
+  function readRaw(file){
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res({ mime: file.type || 'application/octet-stream', b64: String(r.result).split(',')[1], thumb: '', small: '' }); r.onerror = rej; r.readAsDataURL(file); });
+  }
+  function draw(img, max, q){
+    const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth*s); c.height = Math.round(img.naturalHeight*s);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', q);
+  }
+  function prepare(file){
+    if (file.type === 'application/pdf') return readRaw(file).then(x => Object.assign(x, {pdf:true}));
+    return new Promise(res => {
+      const url = URL.createObjectURL(file); const img = new Image();
+      img.onload = () => {
+        const full = draw(img, 1600, 0.72), small = draw(img, 160, 0.6);
+        URL.revokeObjectURL(url);
+        res({ mime: 'image/jpeg', b64: full.split(',')[1], thumb: small, small });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); readRaw(file).then(res); };
+      img.src = url;
+    });
+  }
+  function addFiles(files){
+    Array.from(files || []).forEach(file => {
+      const rec = { busy: true, thumb: '', id: '' };
+      const form = f;
+      form.receipts.push(rec); pending++; renderThumbs(); updateSaveBtn();
+      prepare(file).then(p => {
+        rec.thumb = p.thumb; rec.pdf = !!p.pdf;
+        if (!form.thumb && p.small) form.thumb = p.small;
+        if (form === f) renderThumbs();
+        return call('upload', { txnId: form.id, mime: p.mime, b64: p.b64 });
+      }).then(r => { rec.id = r.id; rec.url = r.url; })
+        .catch(e => { form.receipts.splice(form.receipts.indexOf(rec), 1); toast('Upload failed: ' + e.message, 4000); })
+        .finally(() => { rec.busy = false; pending--; if (form === f){ renderThumbs(); updateSaveBtn(); } });
+    });
+  }
+  // Draft/new: Save (stays in To complete) + Submit. Submitted: one "Save changes" that keeps it submitted.
+  function updateSaveBtn(){
+    const sb = $('#saveBtn'), sub = $('#submitBtn'), up = pending > 0;
+    const done = f && f.status === 'Done', voided = f && f.status === 'Void';
+    sb.style.display = done ? 'none' : 'block';
+    sub.style.display = voided ? 'none' : 'block';
+    sb.disabled = sub.disabled = up;
+    sb.textContent = up ? 'Uploading…' : 'Save';
+    sub.textContent = up ? 'Uploading…' : (done ? 'Save changes ✓' : 'Submit ✓');
+  }
+  function missing(d){
+    const m = [];
+    if (!d.owner) m.push('owner');
+    if (d.car_mode === 'km' && !(Number(d.km) > 0)) m.push('km');
+    else if (d.amount === '') m.push('amount');
+    else if (d.currency === 'CNY' && d.aud === '') m.push('AUD charged');
+    if (d.type === 'Expense' && !d.category_id) m.push('category');
+    return m;
+  }
+
+  function collect(){
+    return {
+      id: f.id, type: f.type, owner: f.owner, date: $('#date').value || today(),
+      amount: $('#amount').value.replace(/[, ]/g,''), currency: f.currency,
+      aud: f.currency === 'CNY' ? $('#aud').value.replace(/[, ]/g,'') : '',
+      details: $('#details').value, category_id: f.category_id, market: f.market,
+      payer: f.payer, method: f.method, capital: $('#capital').checked,
+      alloc_mode: /amt$/.test(f.split.k) ? 'amt' : 'pct',
+      alloc_input: (function(){ const v = Number(f.split.v), t = Number($('#amount').value) || 0;
+        if (f.split.v === '' || isNaN(v)) return '';
+        return f.split.k === 'ye_pct' || f.split.k === 'ye_amt' ? v : f.split.k === 'bao_pct' ? 100 - v : t - v; })(),
+      gst: f.type === 'Expense' && $('#gst').checked,
+      market_date: f.market_date || '', market_date_end: f.market_date_end || '',
+      car_mode: f.category_id === 'car' ? f.car_mode : '', km: $('#km').value.replace(/[, ]/g,''),
+      receipts: f.receipts.filter(r => r.id).map(r => r.id), thumb: f.thumb || '', income_source: f.income_source
+    };
+  }
+  function save(submit){
+    const d = collect();
+    d.submit = !!submit;
+    if (submit){ const m = missing(d); if (m.length){ toast('Missing: ' + m.join(', '), 3500); return; } }
+    if (d.amount !== '' && !(Number(d.amount) > 0)){ toast('Amount must be a number'); $('#amount').focus(); return; }
+    if (f.owner === 'Shared' && f.type === 'Expense' && (splitPct() === null && d.amount !== '' || splitPct() < -0.001 || splitPct() > 100.001)){ toast('Check the split'); return; }
+    if (d.amount === '' && d.car_mode !== 'km' && (f.type === 'Income' || !d.receipts.length)){ toast('Enter an amount or add a photo'); $('#amount').focus(); return; }
+    busy(true);
+    call('save', d).then(r => {
+      if (f.type === 'Expense' && f.method) store.set('mf_method_' + boot.user, f.method);
+      toast(r.status === 'Done' ? 'Submitted ✓' : r.status === 'Void' ? 'Saved' : 'Saved to “To complete”');
+      const back = f.from; f = null;
+      refreshBoot().then(() => { if (back === 'list') loadList(); });
+      if (back !== 'list') show('home');
+    }).catch(e => toast(e.message, 4000)).finally(() => busy(false));
+  }
+  function toggleVoid(){
+    const isVoid = f.status === 'Void', back = f.from;
+    busy(true);
+    call(isVoid ? 'restore' : 'void', { id: f.id }).then(() => {
+      toast(isVoid ? 'Restored' : 'Voided'); f = null;
+      refreshBoot(); back === 'list' ? loadList() : show('home');
+    }).catch(e => toast(e.message, 4000)).finally(() => busy(false));
+  }
+  function edit(id, from){
+    busy(true);
+    call('get', { id }).then(t => {
+      openForm({
+        id: t.id, isNew: false, from, type: t.type, owner: t.owner, amount: t.amount, currency: t.currency,
+        aud: t.aud, category_id: t.category_id, market: t.market, date: t.date, details: t.details,
+        payer: t.payer || (t.owner === 'YE' || t.owner === 'BAO' ? t.owner : boot.user), payerTouched: !!t.payer,
+        method: t.method || (t.type === 'Expense' ? (store.get('mf_method_' + boot.user) || boot.methods[0] || '') : ''), capital: t.capital,
+        split: t.alloc_mode === 'amt' ? { k: 'ye_amt', v: t.alloc_input } : { k: 'ye_pct', v: t.alloc_input === '' ? 50 : t.alloc_input },
+        gst: t.gst === true || t.gst === 'TRUE', autoFee: null, market_date: t.market_date || '', market_date_end: t.market_date_end || '', car_mode: t.car_mode || 'fuel', km: t.km,
+        status: t.status, thumb: t.thumb || '',
+        receipts: (t.receiptList || []).map((r, i) => ({ id: r.id, url: r.url, thumb: i === 0 ? (t.thumb || '') : '' })),
+        income_source: t.income_source || 'Cash'
+      });
+    }).catch(e => toast(e.message, 4000)).finally(() => busy(false));
+  }
+
+  // ---------- records ----------
+  let qT;
+  function openList(){
+    segSet('#statusSeg', ''); $('#q').value = ''; $('#month').value = '';
+    loadList();
+  }
+  function loadList(){
+    show('list');
+    const on = $('#statusSeg button.on');
+    $('#items').innerHTML = '<div class="empty">Loading…</div>';
+    call('records', { q: $('#q').value, month: $('#month').value, status: on ? on.dataset.v : '' }).then(rows => {
+      $('#items').innerHTML = rows.length ? rows.map(r => itemHtml(r)).join('') : '<div class="empty">Nothing here</div>';
+    }).catch(e => { $('#items').innerHTML = '<div class="empty">'+esc(e.message)+'</div>'; });
+  }
+
+  // ---------- events ----------
+  function bind(){
+    $$('.big').forEach(b => b.addEventListener('click', () => openForm(blankForm('Expense', b.dataset.entry))));
+    $('#goIncome').addEventListener('click', () => openForm(blankForm('Income', boot.user)));
+    $('#goRecords').addEventListener('click', openList);
+    $('#snapInput').addEventListener('change', e => { snapFiles(e.target.files); e.target.value = ''; });
+    $('#snapFiles').addEventListener('change', e => { snapFiles(e.target.files); e.target.value = ''; });
+    $('#todo').addEventListener('click', e => { const it = e.target.closest('.item'); if (it && !it.classList.contains('busy')) edit(it.dataset.id, 'home'); });
+    $('#logout').addEventListener('click', e => { e.preventDefault(); logout(); });
+    $('#formBack').addEventListener('click', () => {
+      if (pending){ toast('Photo still uploading'); return; }
+      const back = f.from; f = null; back === 'list' ? loadList() : show('home');
+    });
+    $('#listBack').addEventListener('click', () => show('home'));
+
+    $('#ownerSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      f.owner = b.dataset.v;
+      if (!f.payerTouched) f.payer = f.owner === 'Shared' ? boot.user : f.owner;
+      renderForm(); fillSplit(null); });
+    $('#curSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; f.currency = b.dataset.v; renderForm(); applyFee(); });
+    $('#amount').addEventListener('input', () => { fillSplit(null); renderGst(); });
+    $('#gst').addEventListener('change', renderGst);
+    ['ye_pct','ye_amt','bao_pct','bao_amt'].forEach(k => $('#s_' + k).addEventListener('focus', e => e.target.select()));
+    ['ye_pct','ye_amt','bao_pct','bao_amt'].forEach(k => $('#s_' + k).addEventListener('input', e => {
+      f.split = { k, v: e.target.value.replace(/[, ]/g, '') }; fillSplit(k); }));
+    $('#catGrid').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.more){ showFolded = !showFolded; renderForm(); return; }
+      f.category_id = f.category_id === b.dataset.id ? '' : b.dataset.id; f.capital = null; renderForm(); applyFee(); });
+    const pickMarket = name => { f.market = f.market === name ? '' : name; showMoreMkt = false; $('#mktSearch').value = ''; renderForm(); applyFee(); };
+    $('#marketChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.m === '__more'){ showMoreMkt = !showMoreMkt; renderMarkets(); if (showMoreMkt) $('#mktSearch').focus(); return; }
+      pickMarket(b.dataset.m); });
+    $('#mktSearch').addEventListener('input', renderMarkets);
+    $('#cal').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.nav){ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + Number(b.dataset.nav), 1, 12); renderCal(); return; }
+      pickDay(b.dataset.d); });
+    $('#multiDay').addEventListener('change', () => { if (!$('#multiDay').checked) f.market_date_end = ''; renderCal(); });
+    $('#mktOther').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      if (!b.dataset.add) return pickMarket(b.dataset.m);
+      const name = $('#mktSearch').value.trim(); if (!name) return;
+      busy(true); call('addMarket', { name }).then(r => {
+        if (!boot.markets.some(m => m.name === r.name)) boot.markets.push({ name: r.name, fee: '', top: false, n: 0 });
+        f.market = ''; pickMarket(r.name); toast('Added ' + r.name);
+      }).catch(e => toast(e.message, 4000)).finally(() => busy(false)); });
+    $('#sourceChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; f.income_source = b.dataset.s; renderForm(); });
+    $('#payerSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; f.payer = b.dataset.v; f.payerTouched = true; renderForm(); });
+    $('#methodChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; f.method = b.dataset.m; renderForm(); });
+    $('#date').addEventListener('change', () => { f.date = $('#date').value; renderKm(); });
+    $('#carSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      f.car_mode = b.dataset.v; if (f.car_mode === 'fuel') $('#amount').value = ''; renderForm(); });
+    $('#km').addEventListener('input', () => { f.km = $('#km').value; renderKm(); });
+    $('#details').addEventListener('input', () => { f.details = $('#details').value; });
+    $('#capital').addEventListener('change', () => { f.capital = $('#capital').checked; });
+    $('#filePhoto').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+    $('#fileAny').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+    $('#thumbs').addEventListener('click', e => { const b = e.target.closest('button.x'); if (!b) return;
+      const i = Number(b.dataset.i), r = f.receipts[i]; if (!r || r.busy) return;
+      f.receipts.splice(i, 1); if (i === 0) f.thumb = (f.receipts[0] && f.receipts[0].thumb) || ''; renderThumbs(); });
+    $('#saveBtn').addEventListener('click', () => save(false));
+    $('#submitBtn').addEventListener('click', () => save(true));
+    $('#voidLink').addEventListener('click', e => { e.preventDefault(); toggleVoid(); });
+
+    $('#statusSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; segSet('#statusSeg', b.dataset.v); loadList(); });
+    $('#q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(loadList, 350); });
+    $('#month').addEventListener('change', loadList);
+    $('#items').addEventListener('click', e => { const it = e.target.closest('.item'); if (it) edit(it.dataset.id, 'list'); });
+  }
+
+  buildPad(); renderPin(); bind();
+  start();
+})();
+</script>
+</body>
+</html>
