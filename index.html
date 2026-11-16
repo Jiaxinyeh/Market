@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Market">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f3ee">
+<title>Market Finance</title>
+<style>
+  html,body{margin:0;height:100%;background:#f6f3ee;overflow:hidden}
+  body{padding-top:env(safe-area-inset-top);box-sizing:border-box}
+  iframe{border:0;width:100%;height:100%;display:block}
+  p{font:15px -apple-system,Arial,sans-serif;color:#7a746b;text-align:center;margin-top:40vh}
+</style>
+</head>
+<body>
+<!--
+  Wrapper page: shows the Apps Script app full-screen without Google's top banner.
+  1. Paste your Web app URL (ends with /exec) below.
+  2. Host this file (e.g. GitHub Pages) and add  ?u=YE&k=...  links to your home screen.
+-->
+<iframe id="app" allow="camera; clipboard-write" title="Market Finance"></iframe>
+<script>
+  const EXEC_URL = 'https://script.google.com/macros/s/AKfycbzv7EwVM6UTllEebrCsrGTq0AkEQ38CZ5Vyr0_qVMvvMTAp0E6j2WvAuS5Ed1bSSMzc/exec';
+  if (EXEC_URL.indexOf('https://script.google.com/') !== 0) {
+    document.body.innerHTML = '<p>Set EXEC_URL in this page first.</p>';
+  } else {
+    document.getElementById('app').src = EXEC_URL + location.search;
+  }
+</script>
+</body>
+</html>
